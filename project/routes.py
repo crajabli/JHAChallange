@@ -3,7 +3,14 @@ from .models import db, JHA, Step
 
 main = Blueprint('main', __name__)
 
-#
+
+# request payload:
+# {
+#   "title": "Welding Safety",
+#   "author": "John Doe",
+#   "job_description": "This JHA covers the hazards associated with welding tasks.",
+#   "job_location": "Workshop A"
+# }
 @main.route('/jha', methods=['POST'])
 def create_jha():
     data = request.get_json()
@@ -18,6 +25,7 @@ def create_jha():
     return jsonify({"message": "JHA created successfully", "jha_id": new_jha.id}), 201
 
 
+# Get all of the JHAs
 @main.route('/jhas', methods=['GET'])
 def get_jhas():
     jhas = JHA.query.all()
@@ -35,6 +43,7 @@ def get_jhas():
     return jsonify({"jhas": output}), 200
 
 
+# Get a single JHA
 @main.route('/jha/<int:jha_id>', methods=['GET'])
 def get_jha(jha_id):
     jha = JHA.query.get_or_404(jha_id)
@@ -62,6 +71,12 @@ def get_jha(jha_id):
     return jsonify({"jha": jha_data}), 200
 
 
+# Update a JHA
+# Example request payload:
+# {
+#   "title": "Updated Welding Safety",
+#   "job_location": "Workshop B"
+# }
 @main.route('/jha/<int:jha_id>', methods=['PUT'])
 def update_jha(jha_id):
     data = request.get_json()
@@ -76,6 +91,7 @@ def update_jha(jha_id):
     return jsonify({"message": "JHA updated successfully"}), 200
 
 
+# Delete a JHA
 @main.route('/jha/<int:jha_id>', methods=['DELETE'])
 def delete_jha(jha_id):
     jha = JHA.query.get_or_404(jha_id)
@@ -84,6 +100,14 @@ def delete_jha(jha_id):
     return jsonify({"message": "JHA deleted successfully"}), 200
 
 
+# Add a step to a JHA
+# Example request payload:
+# {
+#   "step_number": 1,
+#   "description": "Prepare the equipment",
+#   "hazards": "Electrical hazards",
+#   "controls": "Wear insulated gloves"
+# }
 @main.route('/jha/<int:jha_id>/step', methods=['POST'])
 def add_step(jha_id):
     jha = JHA.query.get_or_404(jha_id)
@@ -102,6 +126,7 @@ def add_step(jha_id):
 
     return jsonify({"message": "Step added successfully", "step_id": new_step.id}), 201
 
+# Update a step
 @main.route('/step/<int:step_id>', methods=['PUT'])
 def update_step(step_id):
     data = request.get_json()
@@ -116,6 +141,7 @@ def update_step(step_id):
     return jsonify({"message": "Step updated successfully"}), 200
 
 
+# Delete a step
 @main.route('/step/<int:step_id>', methods=['DELETE'])
 def delete_step(step_id):
     step = Step.query.get_or_404(step_id)
