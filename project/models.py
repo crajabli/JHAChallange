@@ -23,5 +23,13 @@ class Step(db.Model):
     jha_id = db.Column(db.Integer, db.ForeignKey('jha.id'), nullable=False)
     step_number = db.Column(db.Integer, nullable=False)
     step_description = db.Column(db.Text, nullable=False)
-    hazard_description = db.Column(db.Text, nullable=False)
-    hazard_controls = db.Column(db.Text, nullable=False)
+    
+    hazards = db.relationship('Hazard', backref='step', cascade='all, delete-orphan', lazy=True)
+
+class Hazard(db.Model):
+    __tablename__ = 'hazard'
+
+    id = db.Column(db.Integer, primary_key=True)
+    step_id = db.Column(db.Integer, db.ForeignKey('step.id'), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    controls = db.Column(db.Text, nullable=False)

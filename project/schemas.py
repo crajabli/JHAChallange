@@ -1,12 +1,18 @@
 from marshmallow import Schema, fields, validates, ValidationError
 
+class HazardSchema(Schema):
+    id = fields.Int(dump_only=True)
+    step_id = fields.Int()
+    description = fields.Str(required=True)
+    controls = fields.Str(required=True)
+
+
 class StepSchema(Schema):
     id = fields.Int(dump_only=True)
     step_number = fields.Int(dump_only=True)
     step_description = fields.Str(required=True)
-    hazard_description = fields.Str(required=True)
-    hazard_controls = fields.Str(required=True)
     jha_id = fields.Int()
+    hazards = fields.List(fields.Nested(HazardSchema), dump_only=True)
 
 
 class JHASchema(Schema):

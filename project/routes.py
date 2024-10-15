@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from .models import db, JHA, Step
-from .schemas import StepSchema, JHASchema
+from .models import db, JHA, Step, Hazard
+from .schemas import StepSchema, JHASchema, HazardSchema
 from marshmallow import ValidationError
 
 main = Blueprint("main", __name__)
@@ -8,6 +8,8 @@ main = Blueprint("main", __name__)
 
 jha_schema = JHASchema()
 step_schema = StepSchema()
+hazard_schema = HazardSchema()
+hazards_schema = HazardSchema(many=True)
 
 # request payload:
 # {
@@ -107,8 +109,6 @@ def add_step(jha_id):
         jha_id=jha_id,
         step_number=next_step_number,
         step_description=validated_data["step_description"],
-        hazard_description=validated_data["hazard_description"],
-        hazard_controls=validated_data["hazard_controls"],
     )
 
     db.session.add(new_step)
@@ -136,11 +136,18 @@ def update_step(step_id):
             step.step_number = new_step_number
 
     step.step_description = data.get("step_description", step.step_description)
-    step.hazard_description = data.get("hazard_description", step.hazard_description)
-    step.hazard_controls = data.get("hazard_controls", step.hazard_controls)
 
     db.session.commit()
     return jsonify({"message": "Step updated successfully"}), 200
+
+
+# Get a single step
+@main.route("/step/<int:step_id>", methods=["GET"])
+def get_step(step_id):
+    step = Step.query.get_or_404(step_id)
+    response = step_schema.dump(step)
+
+    return jsonify(response), 200
 
 
 # Delete a step
@@ -150,3 +157,47 @@ def delete_step(step_id):
     db.session.delete(step)
     db.session.commit()
     return jsonify({"message": "Step deleted successfully"}), 200
+
+
+# Add a hazard to a step
+@main.route("/step/<int:step_id>/hazard", methods=["POST"])
+def add_hazard(step_id):
+    data = request.get_json()
+
+    try:
+        validated_data = hazard_schema.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+    
+    new_hazard = Hazard(
+        step_id=step_id,
+        description=validated_data["description"],
+        controls=validated_data["controls"],
+    )
+
+    db.session.add(new_hazard)
+    db.session.commit()
+
+    return jsonify({"message": "Hazard added successfully", "New Hazard": hazard_schema.dump(new_hazard)}), 201
+
+
+# Update a hazard
+@main.route("/hazard/<int:hazard_id>", methods=["PUT"])
+def update_hazard(hazard_id):
+    data = request.get_json()
+    hazard = Hazard.query.get_or_404(hazard_id)
+
+    hazard.description = data.get("description", hazard.description)
+    hazard.controls = data.get("controls", hazard.controls)
+
+    db.session.commit()
+    return jsonify({"message": "Hazard updated successfully"}), 200
+
+
+# Delete a hazard
+@main.route("/hazard/<int:hazard_id>", methods=["DELETE"])
+def delete_hazard(hazard_id):
+    hazard = Hazard.query.get_or_404(hazard_id)
+    db.session.delete(hazard)
+    db.session.commit()
+    return jsonify({"message": "Hazard deleted successfully"}), 200
