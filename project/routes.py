@@ -1,9 +1,13 @@
 from flask import Blueprint, request, jsonify
 from .models import db, JHA, Step
 from .schemas import StepSchema, JHASchema
+from marshmallow import ValidationError
 
 main = Blueprint("main", __name__)
 
+
+jha_schema = JHASchema()
+step_schema = StepSchema()
 
 # request payload:
 # {
@@ -15,34 +19,30 @@ main = Blueprint("main", __name__)
 @main.route("/jha", methods=["POST"])
 def create_jha():
     data = request.get_json()
+
+    try:
+        validated_data = jha_schema.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+
+
     new_jha = JHA(
-        title=data["title"],
-        author=data["author"],
-        job_description=data["job_description"],
-        job_location=data["job_location"],
+        title=validated_data["title"],
+        author=validated_data["author"],
+        job_description=validated_data["job_description"],
+        job_location=validated_data["job_location"],
     )
+
     db.session.add(new_jha)
     db.session.commit()
-    return jsonify({"message": "JHA created successfully", "jha_id": new_jha.id}), 201
+    return jsonify(jha_schema.dump(new_jha)), 201
 
 
 # Get all of the JHAs
 @main.route("/jhas", methods=["GET"])
 def get_jhas():
     jhas = JHA.query.all()
-    response = [
-        JHASchema(
-            jha.id,
-            jha.title,
-            jha.author,
-            jha.job_description,
-            jha.job_location,
-            jha.created_at,
-            jha.updated_at,
-            [],
-        ).to_dict()
-        for jha in jhas
-    ]
+    response = jha_schema.dump(jhas, many=True)
     return jsonify({"jhas": response}), 200
 
 
@@ -50,31 +50,9 @@ def get_jhas():
 @main.route("/jha/<int:jha_id>", methods=["GET"])
 def get_jha(jha_id):
     jha = JHA.query.get_or_404(jha_id)
-    steps = Step.query.filter_by(jha_id=jha_id).all()
+    response = jha_schema.dump(jha)
 
-    steps_output = [
-        StepSchema(
-            step.id,
-            step.step_number,
-            step.step_description,
-            step.hazard_description,
-            step.hazard_controls,
-        )
-        for step in steps
-    ]
-
-    jha_response = JHASchema(
-        jha.id,
-        jha.title,
-        jha.author,
-        jha.job_description,
-        jha.job_location,
-        jha.created_at,
-        jha.updated_at,
-        steps_output,
-    )
-
-    return jsonify(jha_response.to_dict()), 200
+    return jsonify(response), 200
 
 
 # Update a JHA
@@ -116,23 +94,27 @@ def delete_jha(jha_id):
 # }
 @main.route("/jha/<int:jha_id>/step", methods=["POST"])
 def add_step(jha_id):
-    jha = JHA.query.get_or_404(jha_id)
     highest_step = Step.query.filter_by(jha_id=jha_id).order_by(Step.step_number.desc()).first()
     next_step_number = 1 if highest_step is None else highest_step.step_number + 1
     data = request.get_json()
 
+    try:
+        validated_data = step_schema.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+
     new_step = Step(
-        jha_id=jha.id,
+        jha_id=jha_id,
         step_number=next_step_number,
-        step_description=data["step_description"],
-        hazard_description=data["hazard_description"],
-        hazard_controls=data["hazard_controls"],
+        step_description=validated_data["step_description"],
+        hazard_description=validated_data["hazard_description"],
+        hazard_controls=validated_data["hazard_controls"],
     )
 
     db.session.add(new_step)
     db.session.commit()
 
-    return jsonify({"message": "Step added successfully", "step_number": next_step_number}), 201
+    return jsonify({"message": "Step added successfully", "New Step": step_schema.dump(new_step)}), 201
 
 
 # Update a step
