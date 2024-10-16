@@ -124,7 +124,7 @@ export default {
                     const response = await axios.post('/jha', payload)
                     jha.value.id = response.data.id
                 }
-                router.push({ name: 'JHAList' })
+ 
             } catch (error) {
                 console.error('Error saving JHA', error)
             }

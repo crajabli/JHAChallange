@@ -53,7 +53,8 @@ def get_jhas():
 def get_jha(jha_id):
     jha = JHA.query.get_or_404(jha_id)
     response = jha_schema.dump(jha)
-
+    steps = Step.query.filter_by(jha_id=jha.id).order_by(Step.step_number).all()
+    response["steps"] = step_schema.dump(steps, many=True)
     return jsonify(response), 200
 
 
