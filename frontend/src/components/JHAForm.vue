@@ -2,6 +2,9 @@
     <div class="container mt-5">
         <h2 class="mb-4">{{ isEditing ? 'Edit' : 'Add' }} JHA</h2>
 
+
+        <SuccessNotification ref="notification" message="JHA saved Successfully"/>
+
         <form @submit.prevent="saveJHA">
             <div class="mb-3">
                 <label class="form-label">Title</label>
@@ -77,9 +80,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import SuccessNotification from './Notification.vue';
 
 export default {
     name: 'JHAForm',
+    components: {
+        SuccessNotification
+    },
     setup() {
         const route = useRoute()
         const router = useRouter()
@@ -92,6 +99,8 @@ export default {
             job_description: '',
             steps: []
         })
+
+        const notification = ref(null)
 
         const fetchJHA = async (id) => {
             try {
@@ -124,6 +133,8 @@ export default {
                     const response = await axios.post('/jha', payload)
                     jha.value.id = response.data.id
                 }
+
+                notification.value.show()
  
             } catch (error) {
                 console.error('Error saving JHA', error)
@@ -157,7 +168,8 @@ export default {
             isEditing,
             saveJHA,
             editStep,
-            deleteStep
+            deleteStep, 
+            notification
         }
     }
 }
