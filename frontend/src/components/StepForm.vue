@@ -45,7 +45,7 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import { useRouter} from 'vue-router'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 export default {

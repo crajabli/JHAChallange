@@ -33,17 +33,34 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Step Number</th>
+                        <th style="width: 70px;">Step</th>
                         <th>Description</th>
                         <th>Hazards</th>
                         <th>Controls</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="step in jha.steps" :key="step.id" @click="editStep(step.id)" class="cursor-pointer">
-                        <td>{{ step.step_number }}</td>
-                        <td>{{ step.step_description }}</td>
-                        
+                        <td class="align-middle" @click.stop>
+                            <input v-model="step.step_number" type="number" class="form-control">
+                        </td>
+                        <td class="align-middle">{{ step.step_description }}</td>
+                        <td>
+                            <div v-for="(hazard, index) in step.hazards" :key="index">
+                                {{ hazard.description }}
+                                <hr v-if="step.hazards.length - 1 > index" class="my-2">
+                            </div>
+                        </td>
+                        <td>
+                            <div v-for="(hazard, index) in step.hazards" :key="index">
+                                {{ hazard.controls }}
+                                <hr v-if="step.hazards.length - 1 > index" class="my-2">
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" @click.stop="deleteStep(step.id)">Delete</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -97,6 +114,12 @@ export default {
 
                 if (isEditing.value) {
                     await axios.put(`/jha/${jha.value.id}`, jha.value)
+                    for (const step of jha.value.steps) {
+                        await axios.put(`/step/${step.id}`, {
+                            step_number: step.step_number,
+                            step_description: step.step_description,
+                        })
+                    }
                 } else {
                     const response = await axios.post('/jha', payload)
                     jha.value.id = response.data.id
@@ -111,6 +134,16 @@ export default {
             router.push({ name: 'EditStep', params: { jhaId: jha.value.id, stepId } })
         }
 
+
+        const deleteStep = async (stepId) => {
+            try {
+                await axios.delete(`/step/${stepId}`)
+                jha.value.steps = jha.value.steps.filter(step => step.id !== stepId)
+            } catch (error) {
+                console.error('Error deleting step', error)
+            }
+        }
+
         onMounted(() => {
             if (route.name === 'EditJHA') {
                 isEditing.value = true
@@ -123,7 +156,8 @@ export default {
             jha,
             isEditing,
             saveJHA,
-            editStep
+            editStep,
+            deleteStep
         }
     }
 }
@@ -132,5 +166,9 @@ export default {
 <style>
 .cursor-pointer {
     cursor: pointer;
+}
+
+hr {
+    border: 1px solid #ccc;
 }
 </style>

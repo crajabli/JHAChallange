@@ -10,7 +10,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <router-link class="nav-link" to="/">Home</router-link>
+              <router-link class="nav-link" to="/">JHAs</router-link>
             </li>
             <li class="nav-item">
               <router-link class="nav-link" to="/jha/add">Add JHA</router-link>
@@ -30,4 +30,3 @@ export default {
   name: 'App'
 }
 </script>
-
