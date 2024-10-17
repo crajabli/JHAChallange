@@ -30,7 +30,16 @@
             <h3>Steps</h3>
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <span>Steps</span>
-                <router-link :to="`/jha/${jha.id}/step/add`" class="btn btn-success btn-sm">+ Add Step</router-link>
+                <div class="tooltip-wrapper">
+                    <button
+                    class="btn btn-success btn-sm"
+                    :disabled="!jha.id"
+                    @click.prevent="goToAddStep"
+                    >
+                    + Add Step
+                    </button>
+                    <span v-if="!jha.id" class="tooltip-text">Please save the JHA to add steps</span>
+                </div>
             </div>
 
             <table class="table table-striped">
@@ -46,7 +55,7 @@
                 <tbody>
                     <tr v-for="step in jha.steps" :key="step.id" @click="editStep(step.id)" class="cursor-pointer">
                         <td class="align-middle" @click.stop>
-                            <input v-model="step.step_number" type="number" class="form-control">
+                            <input v-model.number="step.step_number" @focus="captureOldStepNumber(step)" @blur="handleStepNumberChange(step)" type="number" class="form-control">
                         </td>
                         <td class="align-middle">{{ step.step_description }}</td>
                         <td>
@@ -61,7 +70,7 @@
                                 <hr v-if="step.hazards.length - 1 > index" class="my-2">
                             </div>
                         </td>
-                        <td>
+                        <td class="align-middle">
                             <button class="btn btn-danger btn-sm" @click.stop="deleteStep(step.id)">Delete</button>
                         </td>
                     </tr>
@@ -91,6 +100,7 @@ export default {
         const route = useRoute()
         const router = useRouter()
         const isEditing = ref(false)
+        const oldStepNumber = ref(null)
         const jha = ref({
             id: null,
             title: '',
@@ -108,6 +118,27 @@ export default {
                 jha.value = response.data
             } catch (error) {
                 console.error('Error fetching JHA', error)
+            }
+        }
+
+        const captureOldStepNumber = (step) => {
+            oldStepNumber.value = step.step_number
+        }
+
+        
+        const handleStepNumberChange = (changeStep) => {
+            const newStepNumber = changeStep.step_number
+
+            if (newStepNumber === oldStepNumber.value) {
+                return
+            }
+
+            const conflictingStep = jha.value.steps.find(
+                (step) => step.step_number === newStepNumber && step.id !== changeStep.id
+            )
+            if (conflictingStep) {
+                conflictingStep.step_number = oldStepNumber.value
+  
             }
         }
 
@@ -141,8 +172,15 @@ export default {
             }
         }
 
+        const goToAddStep = () => {
+            if (jha.value.id) {
+                router.push({ name: 'AddStep', params: { jhaId: jha.value.id } })
+            }
+        }
+
+
         const editStep = (stepId) => {
-            router.push({ name: 'EditStep', params: { jhaId: jha.value.id, stepId } })
+            router.push({ name: 'AddStep', params: { jhaId: jha.value.id, stepId } })
         }
 
 
@@ -169,7 +207,10 @@ export default {
             saveJHA,
             editStep,
             deleteStep, 
-            notification
+            notification,
+            captureOldStepNumber,
+            handleStepNumberChange,
+            goToAddStep
         }
     }
 }
@@ -182,5 +223,37 @@ export default {
 
 hr {
     border: 1px solid #ccc;
+}
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  border-radius: 6px;
+
+  /* Position the tooltip above the button */
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Position above the button */
+  left: 50%;
+  margin-left: -100px;
+
+  /* Tooltip arrow */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Show the tooltip when hovering over the wrapper */
+.tooltip-wrapper:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
 }
 </style>
