@@ -180,7 +180,7 @@ export default {
 
 
         const editStep = (stepId) => {
-            router.push({ name: 'AddStep', params: { jhaId: jha.value.id, stepId } })
+            router.push({ name: 'EditStep', params: { jhaId: jha.value.id, stepId } })
         }
 
 
