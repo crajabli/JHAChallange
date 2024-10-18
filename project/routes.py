@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from .models import db, JHA, Step, Hazard
 from .schemas import StepSchema, JHASchema, HazardSchema
 from marshmallow import ValidationError
+from datetime import datetime
 
 main = Blueprint("main", __name__)
 
@@ -73,6 +74,7 @@ def update_jha(jha_id):
     jha.author = data.get("author", jha.author)
     jha.job_description = data.get("job_description", jha.job_description)
     jha.job_location = data.get("job_location", jha.job_location)
+    jha.updated_at = datetime.utcnow()
 
     db.session.commit()
     return jsonify({"message": "JHA updated successfully"}), 200
@@ -137,6 +139,9 @@ def update_step(step_id):
             step.step_number = new_step_number
 
     step.step_description = data.get("step_description", step.step_description)
+
+    jha = JHA.query.get(step.jha_id)
+    jha.updated_at = datetime.utcnow()
 
     db.session.commit()
     return jsonify({"message": "Step updated successfully"}), 200
