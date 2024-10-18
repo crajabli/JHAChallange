@@ -166,6 +166,8 @@ export default {
                 }
 
                 notification.value.show()
+
+                await fetchJHA(jha.value.id)
  
             } catch (error) {
                 console.error('Error saving JHA', error)
