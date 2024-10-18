@@ -92,7 +92,6 @@ def delete_jha(jha_id):
 # Add a step to a JHA
 # Example request payload:
 # {
-#   "step_number": 1,
 #   "description": "Prepare the equipment",
 #   "hazards": "Electrical hazards",
 #   "controls": "Wear insulated gloves"
@@ -126,6 +125,7 @@ def update_step(step_id):
     data = request.get_json()
     step = Step.query.get_or_404(step_id)
 
+    # Check if the step number is being updated and if it is it would take the existing step number of the conflicting step and swap
     new_step_number = data.get('step_number')
 
     if new_step_number and new_step_number != step.step_number:
@@ -166,6 +166,11 @@ def delete_step(step_id):
 
 
 # Add a hazard to a step
+# Example request payload:
+# {
+#   "description": "Electrical hazards",
+#   "controls": "Wear insulated gloves"
+# }
 @main.route("/step/<int:step_id>/hazard", methods=["POST"])
 def add_hazard(step_id):
     data = request.get_json()

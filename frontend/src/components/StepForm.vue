@@ -14,7 +14,7 @@
             <table class="table table-bordered">
                 <thead class="table-light">
                     <tr>
-                        <th>Description</th>
+                        <th>Hazard Description</th>
                         <th>Hazard Controls</th>
                         <th>Actions</th>
                     </tr>
@@ -78,7 +78,7 @@ export default {
                     isEditing.value = true
                     const response = await axios.get(`/step/${props.stepId}`)
                     step.value = response.data
-                    hazards.value = response.data.hazards // Assuming hazards are returned as part of the step
+                    hazards.value = response.data.hazards 
                 }
             } catch (error) {
                 console.error('Error fetching Step:', error)
@@ -88,21 +88,17 @@ export default {
         const saveStep = async () => {
             try {
                 if (isEditing.value) {
-                    // Update step description
                     await axios.put(`/step/${props.stepId}`, {
                         step_description: step.value.step_description
                     })
 
-                    // Update hazards
                     for (const hazard of hazards.value) {
                         if (hazard.id) {
-                            // Existing hazard, update it
                             await axios.put(`/hazard/${hazard.id}`, {
                                 description: hazard.description,
                                 controls: hazard.controls
                             })
                         } else {
-                            // New hazard, add it
                             await axios.post(`/step/${props.stepId}/hazard`, {
                                 description: hazard.description,
                                 controls: hazard.controls
@@ -110,13 +106,11 @@ export default {
                         }
                     }
                 } else {
-                    // Create new step
                     const response = await axios.post(`/jha/${props.jhaId}/step`, {
                         step_description: step.value.step_description
                     })
                     step.value.id = response.data['New Step'].id
 
-                    // Add hazards
                     for (const hazard of hazards.value) {
                         await axios.post(`/step/${step.value.id}/hazard`, {
                             description: hazard.description,
@@ -147,7 +141,6 @@ export default {
                     console.error('Error deleting Hazard:', error)
                 }
             } else {
-                // Remove hazard from local list if it's not yet saved to backend
                 hazards.value.pop()
             }
         }

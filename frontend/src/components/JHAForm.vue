@@ -241,10 +241,9 @@ hr {
   padding: 5px;
   border-radius: 6px;
 
-  /* Position the tooltip above the button */
   position: absolute;
   z-index: 1;
-  bottom: 125%; /* Position above the button */
+  bottom: 125%; 
   left: 50%;
   margin-left: -100px;
 
@@ -253,7 +252,6 @@ hr {
   transition: opacity 0.3s;
 }
 
-/* Show the tooltip when hovering over the wrapper */
 .tooltip-wrapper:hover .tooltip-text {
   visibility: visible;
   opacity: 1;

@@ -24,7 +24,6 @@ export default {
   methods: {
     show() {
       this.visible = true;
-      // Hide the notification after 3 seconds
       setTimeout(() => {
         this.visible = false;
       }, 3000);
