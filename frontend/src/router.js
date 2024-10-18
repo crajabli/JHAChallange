@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import JHAList from './components/JHAList.vue'
 import JHAForm from './components/JHAForm.vue'
 import StepForm from './components/StepForm.vue'
@@ -13,7 +13,7 @@ const routes = [
 ]
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes, 
 })
 
