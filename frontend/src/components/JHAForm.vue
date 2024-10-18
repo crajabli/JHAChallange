@@ -55,7 +55,7 @@
                 <tbody>
                     <tr v-for="step in jha.steps" :key="step.id" @click="editStep(step.id)" class="cursor-pointer">
                         <td class="align-middle" @click.stop>
-                            <input v-model.number="step.step_number" @focus="captureOldStepNumber(step)" @blur="handleStepNumberChange(step)" type="number" class="form-control">
+                            <input v-model.number="step.step_number" @focus="captureOldStepNumber(step)" @blur="handleStepNumberChange(step)" type="number" min="1" class="form-control">
                         </td>
                         <td class="align-middle">{{ step.step_description }}</td>
                         <td>
