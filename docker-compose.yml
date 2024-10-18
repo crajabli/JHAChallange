@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: ./backend             # Set the context to the backend folder
+      dockerfile: Dockerfile          # Dockerfile is in the backend folder
+    ports:
+      - "5000:5000"                  # Expose port 5000
+    volumes:
+      - ./backend/instance:/app/instance  # Mount the instance folder for SQLite persistence
+    environment:
+      - FLASK_ENV=development
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+     - NODE_ENV=production
